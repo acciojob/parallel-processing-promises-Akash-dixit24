@@ -1,4 +1,7 @@
 const output = document.getElementById("output");
+const loading = document.getElementById("loading");
+const errorDiv = document.getElementById("error");
+const btn = document.getElementById("download-images-button");
 
 const images = [
   { url: "https://picsum.photos/id/237/200/300" },
@@ -6,23 +9,14 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
-// Create loading and error elements
-const loading = document.createElement("div");
-loading.id = "loading";
-loading.textContent = "Loading...";
-
-const errorDiv = document.createElement("div");
-errorDiv.id = "error";
-
-document.body.insertBefore(loading, output);
-document.body.insertBefore(errorDiv, output);
-
-// Function to download a single image
+// Returns a Promise that resolves when image loads
 function downloadImage(url) {
   return new Promise((resolve, reject) => {
     const img = document.createElement("img");
 
-    img.onload = () => resolve(img);
+    img.onload = () => {
+      resolve(img);
+    };
 
     img.onerror = () => {
       reject(new Error(`Failed to load image: ${url}`));
@@ -32,11 +26,12 @@ function downloadImage(url) {
   });
 }
 
-// Function to download all images
+// Download all images using Promise.all()
 async function downloadImages() {
-  loading.style.display = "block";
-  errorDiv.textContent = "";
   output.innerHTML = "";
+  errorDiv.textContent = "";
+
+  loading.textContent = "Loading...";
 
   try {
     const imagePromises = images.map((image) =>
@@ -45,16 +40,17 @@ async function downloadImages() {
 
     const downloadedImages = await Promise.all(imagePromises);
 
-    loading.style.display = "none";
+    loading.textContent = "";
 
     downloadedImages.forEach((img) => {
       output.appendChild(img);
     });
+
   } catch (error) {
-    loading.style.display = "none";
+    loading.textContent = "";
     errorDiv.textContent = error.message;
   }
 }
 
-// Start downloading images
-downloadImages();
+// Button click event
+btn.addEventListener("click", downloadImages);
